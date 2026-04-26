@@ -55,16 +55,24 @@ const nextButton = document.getElementById("next-btn");
 let currentQuestionIndex = 0;
 let score = 0;
 
-function startQuiz() {
-    userName = document.getElementById("username").value;
+function startQuiz(){
+    const input = document.getElementById("username");
+    const error = document.getElementById("error");
 
-    if (userName === "") {
-        alert("Enter your name first!");
+    userName = input.value.trim();
+
+    // 👉 Only show error when button is clicked AND input is empty
+    if(userName === ""){
+        error.style.visibility = "visible";
         return;
     }
 
+    // 👉 If valid input
+    error.style.visibility = "hidden";
+
     document.getElementById("start-screen").style.display = "none";
     document.getElementById("quiz-container").style.display = "block";
+
     currentQuestionIndex = 0;
     score = 0;
     nextButton.innerHTML = "Next";
@@ -200,5 +208,3 @@ nextButton.addEventListener("click", () => {
         startQuiz();
     }
 });
-
-startQuiz();
