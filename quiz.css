@@ -201,3 +201,18 @@ body {
 #error {
     transition: 0.3s;
 }
+
+#clear-history-btn {
+    padding: 8px 16px;
+    background: #001e4d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+#clear-history-btn:hover {
+    background: #003366;
+}
