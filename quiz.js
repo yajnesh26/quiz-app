@@ -53,6 +53,8 @@ const answerButtons = document.getElementById("answer-buttons");
 const nextButton = document.getElementById("next-btn");
 const startButton = document.getElementById("start-btn");
 const usernameInput = document.getElementById("username");
+const questionTracker = document.getElementById("question-tracker");
+const progressBar = document.getElementById("quiz-progress-bar");
 
 if (startButton) {
     startButton.addEventListener("click", startQuiz);
@@ -68,6 +70,16 @@ if (usernameInput) {
 
 let currentQuestionIndex = 0;
 let score = 0;
+let activeQuestions = [];
+
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
 
 function startQuiz(){
     const input = document.getElementById("username");
@@ -87,6 +99,12 @@ function startQuiz(){
     document.getElementById("start-screen").style.display = "none";
     document.getElementById("quiz-container").style.display = "block";
 
+    // Randomize question order and randomize answer options for each question
+    activeQuestions = shuffleArray(questions.map(q => ({
+        ...q,
+        answers: shuffleArray(q.answers)
+    })));
+
     currentQuestionIndex = 0;
     score = 0;
     nextButton.innerHTML = "Next";
@@ -95,9 +113,20 @@ function startQuiz(){
 
 function showQuestion() {
     resetState();
-    let currentQuestion = questions[currentQuestionIndex];
+    let currentQuestion = activeQuestions[currentQuestionIndex];
     let questionNo = currentQuestionIndex + 1;
-    questionElement.innerHTML = questionNo + ". " + currentQuestion.question;
+    let totalQuestions = activeQuestions.length;
+
+    if (questionTracker) {
+        questionTracker.textContent = `Question ${questionNo} of ${totalQuestions}`;
+    }
+
+    if (progressBar) {
+        const progressPercentage = (questionNo / totalQuestions) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+    }
+
+    questionElement.innerHTML = currentQuestion.question;
 
     currentQuestion.answers.forEach(answer => {
         const button = document.createElement("button");
@@ -155,11 +184,12 @@ function showScore() {
     resultDiv.style.display = "block";
     historyDiv.style.display = "block"; // 👈 show only here
 
-    let percentage = (score / questions.length) * 100;
+    let totalQuestions = activeQuestions.length || questions.length;
+    let percentage = (score / totalQuestions) * 100;
     const safeName = escapeHtml(userName);
 
     resultDiv.innerHTML = `
-        <h2>${safeName}, you scored ${score}/${questions.length}</h2>
+        <h2>${safeName}, you scored ${score}/${totalQuestions}</h2>
         <p>Percentage: ${percentage}%</p>
         <div style="background:#ddd; width:100%; height:20px; border-radius:10px;">
             <div style="width:${percentage}%; height:100%; background:green; border-radius:10px;"></div>
@@ -180,7 +210,7 @@ function showScore() {
 
 function handleNextButton() {
     currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
+    if (currentQuestionIndex < activeQuestions.length) {
         showQuestion();
     } else {
         showScore();
@@ -193,7 +223,7 @@ function saveHistory() {
     let data = {
         name: userName,
         score: score,
-        total: questions.length,
+        total: activeQuestions.length || questions.length,
         date: new Date().toLocaleString()
     };
 
@@ -269,7 +299,7 @@ function displayHistory() {
 }
 
 nextButton.addEventListener("click", () => {
-    if (currentQuestionIndex < questions.length) {
+    if (currentQuestionIndex < activeQuestions.length) {
         handleNextButton();
     } else {
         startQuiz();
