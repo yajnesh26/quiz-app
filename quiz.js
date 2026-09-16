@@ -1,4 +1,4 @@
-let username = ""
+let userName = "";
 
 const questions = [
     {
@@ -32,7 +32,7 @@ const questions = [
         question: "Which is the largest country in the world?",
         answers: [
             { text: "Russia", correct: true },
-            { text: "United states", correct: false },
+            { text: "United States", correct: false },
             { text: "China", correct: false },
             { text: "Canada", correct: false },
         ]
@@ -51,6 +51,20 @@ const questions = [
 const questionElement = document.getElementById("question");
 const answerButtons = document.getElementById("answer-buttons");
 const nextButton = document.getElementById("next-btn");
+const startButton = document.getElementById("start-btn");
+const usernameInput = document.getElementById("username");
+
+if (startButton) {
+    startButton.addEventListener("click", startQuiz);
+}
+
+if (usernameInput) {
+    usernameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            startQuiz();
+        }
+    });
+}
 
 let currentQuestionIndex = 0;
 let score = 0;
@@ -122,6 +136,15 @@ function selectAnswer(e) {
     nextButton.style.display = "block";
 }
 
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 function showScore() {
     resetState();
 
@@ -133,15 +156,23 @@ function showScore() {
     historyDiv.style.display = "block"; // 👈 show only here
 
     let percentage = (score / questions.length) * 100;
+    const safeName = escapeHtml(userName);
 
     resultDiv.innerHTML = `
-        <h2>${userName}, you scored ${score}/${questions.length}</h2>
+        <h2>${safeName}, you scored ${score}/${questions.length}</h2>
         <p>Percentage: ${percentage}%</p>
         <div style="background:#ddd; width:100%; height:20px; border-radius:10px;">
             <div style="width:${percentage}%; height:100%; background:green; border-radius:10px;"></div>
         </div>
-        <button onclick="location.reload()">Play Again</button>
+        <button id="play-again-btn">Play Again</button>
     `;
+
+    const playAgainBtn = document.getElementById("play-again-btn");
+    if (playAgainBtn) {
+        playAgainBtn.addEventListener("click", () => {
+            location.reload();
+        });
+    }
 
     saveHistory();
     displayHistory(); // 👈 only runs after quiz ends
@@ -174,31 +205,67 @@ function displayHistory() {
     let history = JSON.parse(localStorage.getItem("quizHistory")) || [];
     const historyDiv = document.getElementById("history");
 
+    if (history.length === 0) {
+        historyDiv.innerHTML = `
+            <h3 style="text-align:center;">📊 Quiz History</h3>
+            <div style="text-align:center; color:#666; margin: 15px 0; font-size:14px;">No quiz history available.</div>
+        `;
+        return;
+    }
+
     historyDiv.innerHTML = `
         <h3 style="text-align:center;">📊 Quiz History</h3>
         <table class="history-table">
-            <tr>
-                <th>Name</th>
-                <th>Score</th>
-                <th>Date & Time</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Score</th>
+                    <th>Date & Time</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
+        <div style="text-align:center; margin-top: 15px;">
+            <button id="clear-history-btn">Clear History</button>
+        </div>
     `;
 
-    const table = historyDiv.querySelector("table");
+    const tbody = historyDiv.querySelector("tbody");
+    const fragment = document.createDocumentFragment();
 
     history
+        .slice()
         .sort((a, b) => b.score - a.score) // sort highest score first
         .forEach(item => {
-            let row = `
-            <tr>
-                <td>${item.name}</td>
-                <td>${item.score}/${item.total}</td>
-                <td>${item.date}</td>
-            </tr>
-        `;
-            table.innerHTML += row;
+            const tr = document.createElement("tr");
+
+            const tdName = document.createElement("td");
+            tdName.textContent = item.name;
+
+            const tdScore = document.createElement("td");
+            tdScore.textContent = `${item.score}/${item.total}`;
+
+            const tdDate = document.createElement("td");
+            tdDate.textContent = item.date;
+
+            tr.appendChild(tdName);
+            tr.appendChild(tdScore);
+            tr.appendChild(tdDate);
+            fragment.appendChild(tr);
         });
+
+    tbody.appendChild(fragment);
+
+    const clearHistoryBtn = document.getElementById("clear-history-btn");
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener("click", () => {
+            const confirmed = confirm("Are you sure you want to clear your quiz history?");
+            if (confirmed) {
+                localStorage.removeItem("quizHistory");
+                displayHistory();
+            }
+        });
+    }
 }
 
 nextButton.addEventListener("click", () => {
