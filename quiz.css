@@ -186,16 +186,6 @@ body {
     text-align: center;
 }
 
-#history p {
-    background: #f4f4f4;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 5px 0;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-}
-
 /* History Table */
 .history-table {
     width: 100%;
