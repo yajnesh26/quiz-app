@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="quiz.css">
 </head>
 
@@ -36,7 +39,23 @@
         <div id="result" style="display:none;"></div>
 
         <!-- History -->
-        <div id="history" style="display: none;"></div>
+        <div id="history" style="display: none;">
+            <h3 style="text-align:center;">📊 Quiz History</h3>
+            <table class="history-table" id="history-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Score</th>
+                        <th>Date & Time</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body"></tbody>
+            </table>
+            <p id="empty-history-msg" style="display: none; text-align: center; color: #666; margin: 15px 0; font-size: 14px;">No quiz history available.</p>
+            <div style="text-align: center; margin-top: 15px;">
+                <button id="clear-history-btn">Clear History</button>
+            </div>
+        </div>
     </div>
     <script src="quiz.js"></script>
 </body>
