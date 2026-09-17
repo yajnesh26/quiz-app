@@ -51,6 +51,9 @@ const questions = [
 const questionElement = document.getElementById("question");
 const answerButtons = document.getElementById("answer-buttons");
 const nextButton = document.getElementById("next-btn");
+const startButton = document.getElementById("start-btn");
+const usernameInput = document.getElementById("username");
+const clearHistoryButton = document.getElementById("clear-history-btn");
 
 let currentQuestionIndex = 0;
 let score = 0;
@@ -59,10 +62,10 @@ function startQuiz(){
     const input = document.getElementById("username");
     const error = document.getElementById("error");
 
-    userName = input.value.trim();
+    username = input.value.trim();
 
     // 👉 Only show error when button is clicked AND input is empty
-    if(userName === ""){
+    if(username === ""){
         error.style.visibility = "visible";
         return;
     }
@@ -75,19 +78,26 @@ function startQuiz(){
 
     currentQuestionIndex = 0;
     score = 0;
-    nextButton.innerHTML = "Next";
+    nextButton.textContent = "Next";
     showQuestion();
 }
 
 function showQuestion() {
     resetState();
-    let currentQuestion = questions[currentQuestionIndex];
-    let questionNo = currentQuestionIndex + 1;
-    questionElement.innerHTML = questionNo + ". " + currentQuestion.question;
+
+    const currentQuestion = questions[currentQuestionIndex];
+    const questionNo = currentQuestionIndex + 1;
+
+    questionElement.textContent = `${questionNo}. ${currentQuestion.question}`;
+
+    document.getElementById("question-tracker").textContent =
+        `Question ${questionNo} of ${questions.length}`;
+    document.getElementById("quiz-progress-bar").style.width =
+        `${(questionNo / questions.length) * 100}%`;
 
     currentQuestion.answers.forEach(answer => {
         const button = document.createElement("button");
-        button.innerHTML = answer.text;
+        button.textContent = answer.text;
         button.classList.add("btn");
         answerButtons.appendChild(button);
         if (answer.correct) {
@@ -127,24 +137,29 @@ function showScore() {
 
     document.getElementById("quiz-container").style.display = "none";
     const resultDiv = document.getElementById("result");
-    const historyDiv = document.getElementById("history");
 
     resultDiv.style.display = "block";
-    historyDiv.style.display = "block"; // 👈 show only here
+    document.getElementById("history").style.display = "block";
 
-    let percentage = (score / questions.length) * 100;
+    const percentage = (score / questions.length) * 100;
 
     resultDiv.innerHTML = `
-        <h2>${userName}, you scored ${score}/${questions.length}</h2>
-        <p>Percentage: ${percentage}%</p>
+        <h2 class="result-title"></h2>
+        <p class="result-text"></p>
         <div style="background:#ddd; width:100%; height:20px; border-radius:10px;">
-            <div style="width:${percentage}%; height:100%; background:green; border-radius:10px;"></div>
+            <div class="result-bar" style="height:100%; background:green; border-radius:10px;"></div>
         </div>
         <button onclick="location.reload()">Play Again</button>
     `;
 
+    resultDiv.querySelector(".result-title").textContent =
+        `${username}, you scored ${score}/${questions.length}`;
+    resultDiv.querySelector(".result-text").textContent =
+        `Percentage: ${percentage}%`;
+    resultDiv.querySelector(".result-bar").style.width = `${percentage}%`;
+
     saveHistory();
-    displayHistory(); // 👈 only runs after quiz ends
+    displayHistory();
 }
 
 function handleNextButton() {
@@ -159,52 +174,70 @@ function handleNextButton() {
 function saveHistory() {
     let history = JSON.parse(localStorage.getItem("quizHistory")) || [];
 
-    let data = {
-        name: userName,
+    history.push({
+        name: username,
         score: score,
         total: questions.length,
-        date: new Date().toLocaleString()
-    };
+        date: new Date().toLocaleString(),
+        timestamp: Date.now()
+    });
 
-    history.push(data);
     localStorage.setItem("quizHistory", JSON.stringify(history));
 }
 
 function displayHistory() {
-    let history = JSON.parse(localStorage.getItem("quizHistory")) || [];
-    const historyDiv = document.getElementById("history");
+    const history = JSON.parse(localStorage.getItem("quizHistory")) || [];
+    const tbody = document.getElementById("history-body");
+    const emptyMsg = document.getElementById("empty-history-msg");
 
-    historyDiv.innerHTML = `
-        <h3 style="text-align:center;">📊 Quiz History</h3>
-        <table class="history-table">
-            <tr>
-                <th>Name</th>
-                <th>Score</th>
-                <th>Date & Time</th>
-            </tr>
-        </table>
-    `;
+    tbody.innerHTML = "";
 
-    const table = historyDiv.querySelector("table");
+    if (history.length === 0) {
+        emptyMsg.style.display = "block";
+        return;
+    }
+
+    emptyMsg.style.display = "none";
 
     history
-        .sort((a, b) => b.score - a.score) // sort highest score first
+        .sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            const aTime = a.timestamp ?? new Date(a.date).getTime();
+            const bTime = b.timestamp ?? new Date(b.date).getTime();
+            return (bTime || 0) - (aTime || 0);
+        })
         .forEach(item => {
-            let row = `
-            <tr>
-                <td>${item.name}</td>
-                <td>${item.score}/${item.total}</td>
-                <td>${item.date}</td>
-            </tr>
-        `;
-            table.innerHTML += row;
+            const row = document.createElement("tr");
+
+            const nameCell = document.createElement("td");
+            nameCell.textContent = item.name;
+            row.appendChild(nameCell);
+
+            const scoreCell = document.createElement("td");
+            scoreCell.textContent = `${item.score}/${item.total}`;
+            row.appendChild(scoreCell);
+
+            const dateCell = document.createElement("td");
+            dateCell.textContent = item.date;
+            row.appendChild(dateCell);
+
+            tbody.appendChild(row);
         });
 }
 
-nextButton.addEventListener("click", () => {
-    if (currentQuestionIndex < questions.length) {
-        handleNextButton();
-    } else {
-        startQuiz();
+startButton.addEventListener("click", startQuiz);
+
+usernameInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        startButton.click();
     }
+});
+
+nextButton.addEventListener("click", handleNextButton);
+
+clearHistoryButton.addEventListener("click", () => {
+    localStorage.removeItem("quizHistory");
+    displayHistory();
 });
