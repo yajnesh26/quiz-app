@@ -1,6 +1,6 @@
 # Interactive Quiz Application
 
-A responsive, lightweight, dependency-free Single Page Application (SPA) built with Vanilla JavaScript, HTML5, and CSS3. The application presents a 5-question trivia quiz, evaluates responses in real time, provides visual progress metrics, and persists performance history locally in the browser.
+A responsive, lightweight, dependency-free Single Page Application (SPA) built with Vanilla JavaScript, HTML5, and CSS3. The application draws from a 20-question bank, randomly selects 5 unique questions for each attempt, evaluates responses in real time, provides visual progress metrics, and persists performance history locally in the browser.
 
 ---
 
@@ -34,7 +34,7 @@ This project is a clean demonstration of core frontend engineering principles wi
 ## Key Features
 
 - **Start Screen with Validation**: Users enter a name; the start button validates the input and shows an inline error if it is empty. Pressing `Enter` in the name field starts the quiz.
-- **Sequential Quiz Engine**: A fixed bank of 5 questions is presented in order, one at a time, with 4 answer choices each. Questions and answers are shown in their stored order (no shuffling).
+- **Randomized 5-Question Selection**: A master bank of 20 questions is stored in `quiz.js`. Before each quiz, 5 unique questions are randomly selected using a Fisher-Yates shuffle and presented in randomized order, so every attempt can challenge you with a different set of questions.
 - **Visual Progress Metrics**: A `Question X of 5` tracker and a real-time progress bar that scales with the current question number.
 - **Immediate Visual Feedback**: Choices highlight immediately upon selection (green for correct, red for incorrect), the correct answer is revealed if a mistake is made, and option buttons are locked to prevent multiple submissions.
 - **Score Dashboard**: Displays the final score out of 5, the computed percentage, and a filled colored performance bar.
@@ -61,7 +61,7 @@ This project is a clean demonstration of core frontend engineering principles wi
 flowchart TD
     A[Start Screen] -->|Enter Name + Click Start / Press Enter| B[startQuiz]
     B -->|Validate Name| B
-    B -->|Reset score & index| C[showQuestion: Question 1 of 5]
+    B -->|Reset score & index, select 5 random questions| C[showQuestion: Question 1 of 5]
     C --> E{User Selects Answer}
     E -->|Evaluate dataset.correct| F[Highlight Correct/Incorrect & Lock Buttons]
     F --> G[Reveal 'Next' Button]
@@ -75,14 +75,16 @@ flowchart TD
     M -->|Clear History| N[Remove quizHistory from localStorage]
 ```
 
-### 1. The Question Bank
+### 1. The Master Question Bank & Random Selection
 
-The question bank is a hardcoded array of **5** questions stored in `quiz.js`. Each question has 4 multiple-choice answers with exactly one verified correct answer. All 5 questions are used in every attempt, in their stored order; answers are also presented in their stored order.
+The master question bank is a hardcoded array of **20** questions stored in `quiz.js`. Each question has 4 multiple-choice answers with exactly one verified correct answer.
+
+At the start of every quiz, `selectQuizQuestions()` creates a shuffled copy of the master bank using a Fisher-Yates shuffle and takes the first **5** unique questions from that copy. The master bank itself is never modified or reordered. The selected questions are presented one at a time in the resulting randomized order, so each quiz attempt can contain a different set of 5 questions.
 
 ### 2. Quiz Flow
 
 1. The user enters a name and clicks **Start Quiz** (or presses `Enter`). Empty input shows an inline error.
-2. `startQuiz()` resets the score and question index, then calls `showQuestion()`.
+2. `startQuiz()` randomly selects 5 unique questions from the master bank, resets the score and question index, then calls `showQuestion()`.
 3. Each question renders 4 answer buttons. Selecting one marks it correct/incorrect, reveals the correct answer, disables all buttons, and shows the **Next** button.
 4. The **Next** button advances to the following question. After the last question, `showScore()` renders the result and leaderboard.
 5. **Play Again** reloads the page back to the start screen.
@@ -204,7 +206,7 @@ Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ri
 ## Future Improvements
 
 - [ ] **Custom Category & Difficulty Selection**: Allow players to choose categories (Geography, Science, History) and difficulty levels.
-- [ ] **Question & Answer Shuffling**: Randomize question order and answer option order for higher replayability.
+- [ ] **Answer Option Shuffling**: Randomize the order of the 4 answer options per question for higher replayability. (Question-order randomization is already implemented.)
 - [ ] **Countdown Timer**: Introduce an optional per-question or per-quiz countdown timer for increased challenge.
 - [ ] **Audio & Visual Effects**: Add subtle celebratory sound effects and celebratory confetti animations upon achieving a perfect score.
 - [ ] **REST API Integration**: Connect to external trivia endpoints (e.g. Open Trivia Database API) for infinite questions.
