@@ -1,6 +1,6 @@
 let username = ""
 
-const questions = [
+const masterQuestions = [
     {
         question: "Which is the largest animal in the world?",
         answers: [
@@ -45,6 +45,141 @@ const questions = [
             { text: "Africa", correct: false },
             { text: "Australia", correct: true },
         ]
+    },
+    {
+        question: "Which is the longest river in the world?",
+        answers: [
+            { text: "Amazon", correct: false },
+            { text: "Nile", correct: true },
+            { text: "Yangtze", correct: false },
+            { text: "Mississippi", correct: false },
+        ]
+    },
+    {
+        question: "Which planet is known as the Red Planet?",
+        answers: [
+            { text: "Venus", correct: false },
+            { text: "Mars", correct: true },
+            { text: "Jupiter", correct: false },
+            { text: "Saturn", correct: false },
+        ]
+    },
+    {
+        question: "Which is the tallest mountain in the world?",
+        answers: [
+            { text: "K2", correct: false },
+            { text: "Mount Everest", correct: true },
+            { text: "Kilimanjaro", correct: false },
+            { text: "Kangchenjunga", correct: false },
+        ]
+    },
+    {
+        question: "Which is the largest ocean in the world?",
+        answers: [
+            { text: "Atlantic Ocean", correct: false },
+            { text: "Indian Ocean", correct: false },
+            { text: "Arctic Ocean", correct: false },
+            { text: "Pacific Ocean", correct: true },
+        ]
+    },
+    {
+        question: "Which is the fastest land animal?",
+        answers: [
+            { text: "Cheetah", correct: true },
+            { text: "Lion", correct: false },
+            { text: "Horse", correct: false },
+            { text: "Greyhound", correct: false },
+        ]
+    },
+    {
+        question: "Who painted the Mona Lisa?",
+        answers: [
+            { text: "Vincent van Gogh", correct: false },
+            { text: "Leonardo da Vinci", correct: true },
+            { text: "Pablo Picasso", correct: false },
+            { text: "Michelangelo", correct: false },
+        ]
+    },
+    {
+        question: "What is the chemical symbol for gold?",
+        answers: [
+            { text: "Ag", correct: false },
+            { text: "Go", correct: false },
+            { text: "Au", correct: true },
+            { text: "Gd", correct: false },
+        ]
+    },
+    {
+        question: "What is the capital city of Japan?",
+        answers: [
+            { text: "Seoul", correct: false },
+            { text: "Tokyo", correct: true },
+            { text: "Beijing", correct: false },
+            { text: "Bangkok", correct: false },
+        ]
+    },
+    {
+        question: "Which gas do plants absorb during photosynthesis?",
+        answers: [
+            { text: "Oxygen", correct: false },
+            { text: "Carbon dioxide", correct: true },
+            { text: "Nitrogen", correct: false },
+            { text: "Hydrogen", correct: false },
+        ]
+    },
+    {
+        question: "How many continents are there on Earth?",
+        answers: [
+            { text: "Five", correct: false },
+            { text: "Six", correct: false },
+            { text: "Seven", correct: true },
+            { text: "Eight", correct: false },
+        ]
+    },
+    {
+        question: "Which country is home to the Great Wall?",
+        answers: [
+            { text: "China", correct: true },
+            { text: "India", correct: false },
+            { text: "Japan", correct: false },
+            { text: "Mongolia", correct: false },
+        ]
+    },
+    {
+        question: "Which is the largest island in the world?",
+        answers: [
+            { text: "Australia", correct: false },
+            { text: "Madagascar", correct: false },
+            { text: "Borneo", correct: false },
+            { text: "Greenland", correct: true },
+        ]
+    },
+    {
+        question: "What is the freezing point of water in degrees Celsius?",
+        answers: [
+            { text: "0°C", correct: true },
+            { text: "32°C", correct: false },
+            { text: "100°C", correct: false },
+            { text: "-5°C", correct: false },
+        ]
+    },
+    {
+        question: "Which scientist developed the theory of relativity?",
+        answers: [
+            { text: "Isaac Newton", correct: false },
+            { text: "Albert Einstein", correct: true },
+            { text: "Nikola Tesla", correct: false },
+            { text: "Charles Darwin", correct: false },
+        ]
+    },
+    {
+        question: "What is the capital city of Australia?",
+        answers: [
+            { text: "Sydney", correct: false },
+            { text: "Melbourne", correct: false },
+            { text: "Canberra", correct: true },
+            { text: "Perth", correct: false },
+        ]
     }
 ]
 
@@ -55,8 +190,20 @@ const startButton = document.getElementById("start-btn");
 const usernameInput = document.getElementById("username");
 const clearHistoryButton = document.getElementById("clear-history-btn");
 
+const QUESTIONS_PER_QUIZ = 5;
+
+let quizQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
+
+function selectQuizQuestions() {
+    const shuffled = [...masterQuestions];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, QUESTIONS_PER_QUIZ);
+}
 
 function startQuiz(){
     const input = document.getElementById("username");
@@ -76,6 +223,7 @@ function startQuiz(){
     document.getElementById("start-screen").style.display = "none";
     document.getElementById("quiz-container").style.display = "block";
 
+    quizQuestions = selectQuizQuestions();
     currentQuestionIndex = 0;
     score = 0;
     nextButton.textContent = "Next";
@@ -85,15 +233,15 @@ function startQuiz(){
 function showQuestion() {
     resetState();
 
-    const currentQuestion = questions[currentQuestionIndex];
+    const currentQuestion = quizQuestions[currentQuestionIndex];
     const questionNo = currentQuestionIndex + 1;
 
     questionElement.textContent = `${questionNo}. ${currentQuestion.question}`;
 
     document.getElementById("question-tracker").textContent =
-        `Question ${questionNo} of ${questions.length}`;
+        `Question ${questionNo} of ${quizQuestions.length}`;
     document.getElementById("quiz-progress-bar").style.width =
-        `${(questionNo / questions.length) * 100}%`;
+        `${(questionNo / quizQuestions.length) * 100}%`;
 
     currentQuestion.answers.forEach(answer => {
         const button = document.createElement("button");
@@ -141,7 +289,7 @@ function showScore() {
     resultDiv.style.display = "block";
     document.getElementById("history").style.display = "block";
 
-    const percentage = (score / questions.length) * 100;
+    const percentage = (score / quizQuestions.length) * 100;
 
     resultDiv.innerHTML = `
         <h2 class="result-title"></h2>
@@ -153,7 +301,7 @@ function showScore() {
     `;
 
     resultDiv.querySelector(".result-title").textContent =
-        `${username}, you scored ${score}/${questions.length}`;
+        `${username}, you scored ${score}/${quizQuestions.length}`;
     resultDiv.querySelector(".result-text").textContent =
         `Percentage: ${percentage}%`;
     resultDiv.querySelector(".result-bar").style.width = `${percentage}%`;
@@ -164,7 +312,7 @@ function showScore() {
 
 function handleNextButton() {
     currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
+    if (currentQuestionIndex < quizQuestions.length) {
         showQuestion();
     } else {
         showScore();
@@ -177,7 +325,7 @@ function saveHistory() {
     history.push({
         name: username,
         score: score,
-        total: questions.length,
+        total: quizQuestions.length,
         date: new Date().toLocaleString(),
         timestamp: Date.now()
     });
